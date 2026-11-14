@@ -1,10 +1,10 @@
-import { NoteCollection } from '../models/note.js';
+import { Note } from '../models/note.js';
 import createHttpError from 'http-errors';
 
 // 1. Отримати всі нотатки
 export const getAllNotes = async (req, res, next) => {
   try {
-    const notes = await NoteCollection.find();
+    const notes = await Note.find();
     res.status(200).json(notes);
   } catch (error) {
     next(error);
@@ -15,7 +15,7 @@ export const getAllNotes = async (req, res, next) => {
 export const getNoteById = async (req, res, next) => {
   try {
     const { noteId } = req.params;
-    const note = await NoteCollection.findById(noteId);
+    const note = await Note.findById(noteId);
 
     if (!note) {
       throw createHttpError(404, 'Note not found');
@@ -30,7 +30,7 @@ export const getNoteById = async (req, res, next) => {
 // 3. Створити нову нотатку
 export const createNote = async (req, res, next) => {
   try {
-    const newNote = await NoteCollection.create(req.body);
+    const newNote = await Note.create(req.body);
     res.status(201).json(newNote);
   } catch (error) {
     next(error);
@@ -41,11 +41,10 @@ export const createNote = async (req, res, next) => {
 export const updateNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
-    const updatedNote = await NoteCollection.findByIdAndUpdate(
-      noteId,
-      req.body,
-      { new: true, runValidators: true },
-    );
+    const updatedNote = await Note.findByIdAndUpdate(noteId, req.body, {
+      returnDocument: 'after',
+      runValidators: true,
+    });
 
     if (!updatedNote) {
       throw createHttpError(404, 'Note not found');
@@ -61,7 +60,7 @@ export const updateNote = async (req, res, next) => {
 export const deleteNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
-    const deletedNote = await NoteCollection.findByIdAndDelete(noteId);
+    const deletedNote = await Note.findByIdAndDelete(noteId);
 
     if (!deletedNote) {
       throw createHttpError(404, 'Note not found');
