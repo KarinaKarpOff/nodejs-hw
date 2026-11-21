@@ -1,7 +1,7 @@
 import { Note } from '../models/note.js';
 import createHttpError from 'http-errors';
 
-// 1. Отримати всі нотатки
+// 1. Отримати всі нотатки (з використанням чейнінгу .where())
 export const getAllNotes = async (req, res, next) => {
   try {
     const { page = 1, perPage = 10, tag, search } = req.query;
@@ -10,22 +10,24 @@ export const getAllNotes = async (req, res, next) => {
     const parsedPerPage = parseInt(perPage, 10);
     const skip = (parsedPage - 1) * parsedPerPage;
 
-    const filter = {};
+    const notesQuery = Note.find();
 
     if (tag) {
-      filter.tag = tag;
+      notesQuery.where('tag').equals(tag);
     }
 
     if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { content: { $regex: search, $options: 'i' } },
-      ];
+      notesQuery.where({
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { content: { $regex: search, $options: 'i' } },
+        ],
+      });
     }
 
     const [totalNotes, notes] = await Promise.all([
-      Note.countDocuments(filter),
-      Note.find(filter).skip(skip).limit(parsedPerPage),
+      notesQuery.clone().countDocuments(),
+      notesQuery.skip(skip).limit(parsedPerPage),
     ]);
 
     const totalPages = Math.ceil(totalNotes / parsedPerPage);
