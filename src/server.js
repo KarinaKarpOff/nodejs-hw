@@ -2,6 +2,7 @@
 import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
+import { errors } from 'celebrate';
 import { connectMongoDB } from './db/connectMongoDB.js';
 import notesRoutes from './routes/notesRoutes.js';
 import { logger } from './middleware/logger.js';
@@ -23,6 +24,8 @@ export const setupServer = async () => {
 
   // Маршрути
   app.use(notesRoutes);
+
+  app.use(errors());
 
   // Обробка неіснуючих маршрутів (404)
   app.use(notFoundHandler);
